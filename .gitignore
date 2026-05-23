@@ -1,4 +1,6 @@
 .env
+lab.env
+config/lab.env
 *.log
 *.rrd
 .DS_Store

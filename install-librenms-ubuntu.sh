@@ -1,5 +1,5 @@
 #!/bin/bash
-# Install LibreNMS on Ubuntu 24.04 (matches aiman@server setup)
+# Install LibreNMS on Ubuntu 24.04 — APP_URL uses THIS server's IP automatically
 set -euo pipefail
 
 if [ "$(id -u)" -ne 0 ]; then
@@ -9,10 +9,24 @@ fi
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 DB_PASS="${LIBRENMS_DB_PASS:-librenms_lab_pass_change_me}"
-APP_URL="${LIBRENMS_APP_URL:-http://$(hostname -I | awk '{print $1}')}"
+
+# Auto-detect server IP (first non-loopback IPv4), or override with LIBRENMS_APP_URL
+detect_server_ip() {
+  local ip
+  ip=$(ip -4 route get 1.1.1.1 2>/dev/null | awk '{for(i=1;i<=NF;i++) if($i=="src") print $(i+1)}')
+  if [ -z "$ip" ]; then
+    ip=$(hostname -I | awk '{print $1}')
+  fi
+  echo "$ip"
+}
+
+SERVER_IP="$(detect_server_ip)"
+APP_URL="${LIBRENMS_APP_URL:-http://${SERVER_IP}}"
 
 echo "=== LibreNMS install for Ubuntu 24.04 ==="
-echo "APP_URL will be: $APP_URL"
+echo "Detected server IP: $SERVER_IP"
+echo "APP_URL:            $APP_URL"
+echo "(Override: sudo LIBRENMS_APP_URL=http://OTHER_IP $0)"
 
 apt update
 apt install -y apache2 mariadb-server libapache2-mod-php8.3 \
@@ -58,9 +72,20 @@ cp "$SCRIPT_DIR/config/librenms-scheduler.timer" /etc/systemd/system/
 systemctl daemon-reload
 systemctl enable --now librenms-scheduler.timer
 
+# Create lab.env from example if missing (friend edits ROUTER_IP for their GNS3)
+if [ ! -f "$SCRIPT_DIR/config/lab.env" ]; then
+  cp "$SCRIPT_DIR/config/lab.env.example" "$SCRIPT_DIR/config/lab.env"
+  echo "# LibreNMS server IP (auto): $SERVER_IP" >> "$SCRIPT_DIR/config/lab.env"
+fi
+
+chmod +x "$SCRIPT_DIR/scripts/"*.sh 2>/dev/null || true
+
 echo ""
 echo "=== Install complete ==="
-echo "Open: $APP_URL"
+echo "LibreNMS URL:  $APP_URL"
+echo "Server IP:     $SERVER_IP"
 echo "Create admin user in the web UI."
-echo "DB password: $DB_PASS (change in /opt/librenms/.env)"
-echo "Add GNS3 router: bash $SCRIPT_DIR/scripts/fix-librenms-graphs.sh"
+echo "DB password:   $DB_PASS (change in /opt/librenms/.env)"
+echo ""
+echo "Next: edit config/lab.env (ROUTER_IP, ROUTER_MAC) for YOUR GNS3 lab, then:"
+echo "  bash $SCRIPT_DIR/scripts/fix-librenms-graphs.sh"
