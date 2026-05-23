@@ -49,17 +49,26 @@ mysql -e "CREATE DATABASE IF NOT EXISTS librenms CHARACTER SET utf8mb4 COLLATE u
 mysql -e "CREATE USER IF NOT EXISTS 'librenms'@'localhost' IDENTIFIED BY '${DB_PASS}';"
 mysql -e "GRANT ALL PRIVILEGES ON librenms.* TO 'librenms'@'localhost'; FLUSH PRIVILEGES;"
 
-if [ ! -f /opt/librenms/.env ]; then
+if [ -f /opt/librenms/config.php ]; then
+  echo "Existing LibreNMS installation detected (config.php present). Skipping wizard .env changes."
+elif [ ! -f /opt/librenms/.env ]; then
   cp "$SCRIPT_DIR/config/env.example" /opt/librenms/.env
   sed -i "s|APP_URL=.*|APP_URL=${APP_URL}|" /opt/librenms/.env
-  sed -i "s|DB_PASSWORD=.*|DB_PASSWORD=${DB_PASS}|" /opt/librenms/.env
+  chown librenms:librenms /opt/librenms/.env
+else
+  # Fresh install: keep wizard enabled until setup finishes in the browser
+  if grep -q '^INSTALL=' /opt/librenms/.env; then
+    sed -i 's|^INSTALL=.*|INSTALL=true|' /opt/librenms/.env
+  else
+    echo 'INSTALL=true' >> /opt/librenms/.env
+  fi
   chown librenms:librenms /opt/librenms/.env
 fi
 
 sudo -u librenms composer install --no-dev -d /opt/librenms
 sudo -u librenms php /opt/librenms/artisan key:generate --force
-sudo -u librenms php /opt/librenms/artisan migrate --force
-sudo -u librenms php /opt/librenms/artisan config:cache
+sudo -u librenms php /opt/librenms/artisan config:clear
+rm -f /opt/librenms/bootstrap/cache/config.php
 
 cp "$SCRIPT_DIR/config/librenms.conf" /etc/apache2/sites-available/librenms.conf
 a2ensite librenms.conf
@@ -84,8 +93,17 @@ echo ""
 echo "=== Install complete ==="
 echo "LibreNMS URL:  $APP_URL"
 echo "Server IP:     $SERVER_IP"
-echo "Create admin user in the web UI."
-echo "DB password:   $DB_PASS (change in /opt/librenms/.env)"
 echo ""
-echo "Next: edit config/lab.env (ROUTER_IP, ROUTER_MAC) for YOUR GNS3 lab, then:"
+echo "Open the URL above in your browser to run the official LibreNMS setup wizard."
+echo "You will be redirected to the wizard automatically (via /install)."
+echo "If not, open: ${APP_URL}/install"
+echo ""
+echo "Use these database credentials in the wizard:"
+echo "  Host:      localhost"
+echo "  Database:  librenms"
+echo "  Username:  librenms"
+echo "  Password:  $DB_PASS"
+echo "(Override password: sudo LIBRENMS_DB_PASS=yourpass ./install-librenms-ubuntu.sh)"
+echo ""
+echo "After the wizard completes, edit config/lab.env (ROUTER_IP, ROUTER_MAC) for YOUR GNS3 lab, then:"
 echo "  bash $SCRIPT_DIR/scripts/fix-librenms-graphs.sh"

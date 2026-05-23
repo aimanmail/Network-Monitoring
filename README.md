@@ -50,7 +50,10 @@ sudo ./install-librenms-ubuntu.sh
 # sudo LIBRENMS_APP_URL=http://10.0.0.50 ./install-librenms-ubuntu.sh
 ```
 
-1. Open the printed URL in a browser → create admin user  
+1. Open the printed URL in a browser → you are redirected to the **official LibreNMS setup wizard** (`/install`)  
+   - Pre-install checks → database → admin user → finish  
+   - Use the database credentials printed by the installer (empty `librenms` database)  
+   - Direct link if needed: `http://<server-ip>/install`
 2. Edit **`config/lab.env`** with **your** router IP and MAC  
 3. After GNS3 R1 is running with SNMP:
 
@@ -118,13 +121,14 @@ snmp-server ifindex persist
 
 | File | Purpose |
 |------|---------|
-| `install-librenms-ubuntu.sh` | Install LibreNMS (auto server IP) |
+| `install-librenms-ubuntu.sh` | Install LibreNMS stack; leaves web setup wizard for you |
 | `config/lab.env.example` | **Your** router IP/MAC template |
 | `config/env.example` | LibreNMS `.env` template |
 | `config/librenms.conf` | Apache vhost |
 | `config/librenms-scheduler.*` | Poller timer |
 | `scripts/fix-librenms-graphs.sh` | Add/poll router from `lab.env` |
 | `scripts/verify-snmp-lab.sh` | Test SNMP from `lab.env` |
+| `scripts/test-wizard-flow.sh` | Validate web setup wizard is reachable (on server) |
 
 ---
 
