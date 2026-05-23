@@ -137,7 +137,7 @@ snmp-server ifindex persist
 | Variable | Purpose |
 |----------|---------|
 | `LIBRENMS_APP_URL` | Override auto-detected LibreNMS URL |
-| `LIBRENMS_DB_PASS` | MariaDB password (default in install script) |
+| `LIBRENMS_DB_PASS` | MariaDB password (default: `librenms`) |
 | `ROUTER_IP` / `ROUTER_MAC` | In `config/lab.env` — GNS3 router target |
 
 ---

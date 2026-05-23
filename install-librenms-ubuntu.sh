@@ -8,7 +8,7 @@ if [ "$(id -u)" -ne 0 ]; then
 fi
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
-DB_PASS="${LIBRENMS_DB_PASS:-librenms_lab_pass_change_me}"
+DB_PASS="${LIBRENMS_DB_PASS:-librenms}"
 
 # Auto-detect server IP (first non-loopback IPv4), or override with LIBRENMS_APP_URL
 detect_server_ip() {
