@@ -1,5 +1,5 @@
 #!/bin/bash
-# Install LibreNMS on Ubuntu 24.04 — APP_URL uses THIS server's IP automatically
+# Install LibreNMS on Ubuntu 22.04+ — APP_URL uses THIS server's IP automatically
 set -euo pipefail
 
 if [ "$(id -u)" -ne 0 ]; then
@@ -23,15 +23,15 @@ detect_server_ip() {
 SERVER_IP="$(detect_server_ip)"
 APP_URL="${LIBRENMS_APP_URL:-http://${SERVER_IP}}"
 
-echo "=== LibreNMS install for Ubuntu 24.04 ==="
+echo "=== LibreNMS install for Ubuntu ==="
 echo "Detected server IP: $SERVER_IP"
 echo "APP_URL:            $APP_URL"
 echo "(Override: sudo LIBRENMS_APP_URL=http://OTHER_IP $0)"
 
 apt update
-apt install -y apache2 mariadb-server libapache2-mod-php8.3 \
-  php8.3-cli php8.3-mysql php8.3-gd php8.3-snmp php8.3-mbstring \
-  php8.3-xml php8.3-curl php8.3-zip php8.3-bcmath php8.3-intl \
+apt install -y apache2 mariadb-server libapache2-mod-php \
+  php php-cli php-mysql php-gd php-snmp php-mbstring \
+  php-xml php-curl php-zip php-bcmath php-intl \
   composer git snmp snmp-mibs-downloader rrdtool nmap acl curl
 
 id librenms &>/dev/null || useradd librenms -d /opt/librenms -M -r -s /bin/bash

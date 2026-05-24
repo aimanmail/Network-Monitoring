@@ -2,7 +2,7 @@
 
 Repo: [github.com/aimanmail/Network-Monitoring](https://github.com/aimanmail/Network-Monitoring)
 
-Install the same **LibreNMS + GNS3 SNMP lab** on **any Ubuntu 24.04 server** — IPs are **auto-detected** or set in `config/lab.env` (not hardcoded to one lab).
+Install the same **LibreNMS + GNS3 SNMP lab** on **Ubuntu 22.04, 24.04, or 24.10+** — IPs are **auto-detected** or set in `config/lab.env` (not hardcoded to one lab). PHP packages use Ubuntu’s default `php` metapackages (no version-specific `php8.x` names).
 
 > LibreNMS app is pulled from the official repo: [librenms/librenms](https://github.com/librenms/librenms.git)
 
